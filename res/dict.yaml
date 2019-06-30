@@ -1,0 +1,6 @@
+# Filtering datas
+emails:
+- haydar.qarawlus@gmail.com
+- qarawlus@mail.upb.de
+website_ends_with:
+- upb.de
