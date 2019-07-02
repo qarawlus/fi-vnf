@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    'socket',
     'pyyaml',
     'scapy'
 ]
@@ -19,7 +18,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'spam-vnf=spamvnf:main',
+            'spam-vnf=spamvnf.main:main',
         ],
     },
 )

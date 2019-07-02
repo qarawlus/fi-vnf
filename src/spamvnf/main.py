@@ -1,24 +1,22 @@
-import socket
 import yaml
+import argparse
+import spamvnf.reader.reader as reader
+import nfqueue
 
-host = 'localhost'
-print(host)
-port = 25                # opening a port
-s.bind((host, port))        # Bind to the port
 
-s.listen(5)                # Now wait for client connection.
-c, addr = s.accept()       # accept the client
-c.send(str.encode('waiting for connection...'))  
-print(addr)
-if '127' in addr[0]:  #---->This is what does not work. 
-   print(str.encode(f'Got connection from {addr}'))
-   data = c.recv(1024)
-   c.send(str.encode('Thank you for connecting'))
-   print('accepted')
-   print(data)
+
+def parse_args():
+    """
+    Parse cli arguments
+    """
+    args = argparse.ArgumentParser("VNF Devs Spam Filter")
+    args.add_argument('-d', '--dict', dest='dict_file', help='Dictionary file', required=True)
+
+    return args.parse_args()
+
    
-else:
-   c.close() 
-   print('blocked.')
-   print(str.encode('{} tried to connect'.format(addr)))
-print(f'a connection was request from {addr}')
+def main():
+    arguments = parse_args() 
+    dict_file = arguments.dict_file
+    email, websites = reader.read_dict_file(dict_file)
+
