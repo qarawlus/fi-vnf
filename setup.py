@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 
 requirements = [
     'pyyaml',
-    'scapy'
+    'scapy',
+    'netfilterqueue'
 ]
 
 setup(

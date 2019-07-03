@@ -1,9 +1,10 @@
 import yaml
 import argparse
 import spamvnf.reader.reader as reader
-import nfqueue
+import netfilterqueue
 
 
+DICT_FILE = None
 
 def parse_args():
     """
@@ -16,7 +17,22 @@ def parse_args():
 
    
 def main():
-    arguments = parse_args() 
-    dict_file = arguments.dict_file
-    email, websites = reader.read_dict_file(dict_file)
+    # arguments = parse_args() 
+    # DICT_FILE = arguments.dict_file
+    
+    
+    nfqueue = netfilterqueue.NetfilterQueue()
+    nfqueue.bind(1,handle_packet)
+    try:
+        nfqueue.run()
+    except KeyboardInterrupt:
+        print('VNF Quitted')
+    nfqueue.unbind()
 
+
+def handle_packet(pkt: netfilterqueue.Packet):
+    
+    # email, websites = reader.read_dict_file(DICT_FILE)
+    print(pkt)
+    pkt.accept()
+    # send(IP(src="10.0.99.100",dst="10.1.99.100")/ICMP()/"Hello World")
