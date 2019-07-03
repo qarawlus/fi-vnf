@@ -2,7 +2,7 @@ import yaml
 import argparse
 import spamvnf.reader.reader as reader
 import netfilterqueue
-
+from scapy.all import *
 
 DICT_FILE = None
 
@@ -33,6 +33,7 @@ def main():
 def handle_packet(pkt: netfilterqueue.Packet):
     
     # email, websites = reader.read_dict_file(DICT_FILE)
-    print(pkt)
+    packet = IP(pkt.get_payload())
+    print(packet.show())
     pkt.accept()
     # send(IP(src="10.0.99.100",dst="10.1.99.100")/ICMP()/"Hello World")
