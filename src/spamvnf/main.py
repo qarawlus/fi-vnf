@@ -17,9 +17,6 @@ def parse_args():
 
    
 def main():
-    # arguments = parse_args() 
-    # DICT_FILE = arguments.dict_file
-    
     
     nfqueue = netfilterqueue.NetfilterQueue()
     nfqueue.bind(1,handle_packet)
@@ -34,6 +31,11 @@ def handle_packet(pkt: netfilterqueue.Packet):
     
     # email, websites = reader.read_dict_file(DICT_FILE)
     packet = IP(pkt.get_payload())
-    print(packet.show())
-    pkt.accept()
-    # send(IP(src="10.0.99.100",dst="10.1.99.100")/ICMP()/"Hello World")
+    payload = str(packet[TCP].payload)
+    if "qarawlus@mail.uni-paderborn.de" in payload:
+        print("Packet rejected")
+        pkt.drop()
+    else:
+        pkt.accept()
+
+    # print(len(packet[TCP].payload))
