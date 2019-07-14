@@ -26,7 +26,7 @@ $ ryu-manager <PATH_TO_RYU_CONTROLLER>/ryu/app/simple_switch.py
 $ sudo mn --custom res/fi.py --topo FI_TOPO --switch ovsk --controller
 mininet> xterm sf
 xterm> ./initiate.sh
-xterm> spam-vnf
+xterm> spam-vnf -d res/dict.yaml
 ```
 
 You can test connectivity on ports other than 25 by simply running the following:
