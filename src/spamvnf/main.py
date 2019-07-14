@@ -2,6 +2,7 @@ import argparse
 import spamvnf.reader.reader as reader
 import netfilterqueue
 from scapy.all import TCP, IP
+import re
 
 
 class Spam_VNF:
@@ -30,36 +31,47 @@ class Spam_VNF:
         Returns False if checks failed (email is spam)
         """
 
+        email_re = r"(.*)(From:\s)([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
+        m = re.search(email_re, text)
+        if m:
+            email = m.group(3)
+            print(email)
+            if email in self.emails:
+                return False
         # Filtering the sender address
         sender_address_op1 = list(filter(lambda i: "From:" in i, text))
-        sender_address_op2 = sender_address_op1[0].strip()
-        sender_address_op3 = sender_address_op2.split("From: ")[1]
-        sender_email = sender_address_op3.rstrip().replace('\\n\\', '')
-        # print("sender_email:",sender_email)
-        # Fetching domain name
-        domain_name = sender_email.split("@")[1]
-        # print("domain_name:",domain_name)
+        if (len(sender_address_op1) >= 1):
+            sender_address_op2 = sender_address_op1[0].strip()
+            sender_address_op3 = sender_address_op2.split("From: ")[1]
+            sender_email = sender_address_op3.rstrip().replace('\\n\\', '')
+            print("sender_email:", sender_email)
+            if sender_email in self.emails:
+                return False
+            # Fetching domain name
+            domain_name = sender_email.split("@")[1]
+            print("domain_name:", domain_name)
+            if domain_name in self.websites:
+                return False
         # Finding email server
-        # email_server_op1 = list(filter(lambda k: "Received: from " in k, text))
-        # email_server_op2 = email_server_op1[0]
-        # email_server_op3 = email_server_op2.split("Received: from ")[1]
-        # email_server = email_server_op3.split(" ")[0]
-        # print("email_server:",email_server)
+        email_server_op1 = list(filter(lambda k: "Received: from " in k, text))
+        if(len(email_server_op1) >= 1):
+            email_server_op2 = email_server_op1[0]
+            email_server_op3 = email_server_op2.split("Received: from ")[1]
+            email_server = email_server_op3.split(" ")[0]
+            if email_server != domain_name:
+                return False
+
         # Filtering subject line
         subject_op1 = list(filter(lambda j: "Subject:" in j, text))
-        subject_op2 = subject_op1[0].strip()
-        subject_op3 = subject_op2.split("Subject: ")[1]
-        subject_email = subject_op3.rstrip().replace('\\n\\', '')
-        # print("subject:",subject_email)
-        # Check if sender domain in dict of domains
-        if domain_name in self.websites:
-            return False
-        elif subject_email in self.subjects:
-            return False
-        elif sender_email in self.emails:
-            return False
-        else:
-            return True
+        if(len(subject_op1) >= 1):
+            subject_op2 = subject_op1[0].strip()
+            subject_op3 = subject_op2.split("Subject: ")[1]
+            subject_email = subject_op3.rstrip().replace('\\n\\', '')
+            print("subject:", subject_email)
+            if subject_email in self.subjects:
+                return False
+
+        return True
 
 
 def main():
@@ -69,7 +81,6 @@ def main():
     args = parse_args()
     filter_file = args.dict_file
     vnf = Spam_VNF(filter_file)
-    print
     nfqueue = netfilterqueue.NetfilterQueue()
     nfqueue.bind(1, vnf.handle_packet)
     try:

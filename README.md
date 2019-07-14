@@ -28,7 +28,9 @@ mininet> xterm sf
 xterm> ./initiate.sh
 xterm> spam-vnf -d res/dict.yaml
 ```
+Here, `-d res/dict.yaml` defines the filter rules file that is being used for the spam filtering
 
+---
 You can test connectivity on ports other than 25 by simply running the following:
 
 ```bash
