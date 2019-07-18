@@ -17,5 +17,5 @@ while True:
    if not data:
       break
    print(data)
-c.close() 
-print(f'a connection was request from {addr}')
+# c.close() 
+# print(f'a connection was request from {addr}')

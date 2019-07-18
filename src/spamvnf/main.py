@@ -3,12 +3,15 @@ import spamvnf.reader.reader as reader
 import netfilterqueue
 from scapy.all import TCP, IP
 import re
+import time
 
 
 class Spam_VNF:
+
     def __init__(self, filter_file):
         self.emails, self.servers, self.subjects = \
             reader.read_dict_file(filter_file)
+        self.packet_processed = 0
 
     def handle_packet(self, pkt: netfilterqueue.Packet):
         """
@@ -23,6 +26,7 @@ class Spam_VNF:
         else:
             print("Packet dropped")
             pkt.drop()
+        self.packet_processed += 1
         # TODO: Possibility of Queueing packets
 
     def check_email(self, text):
@@ -33,7 +37,7 @@ class Spam_VNF:
 
         sender_re = r"(.*)(From:\s)([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
         server_re = r"(.*)(Received: from\s)([a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
-        subject_re = r"(.*)(Subject:\s)(.*)"
+        subject_re = r"(.*)(Subject:\s)([a-zA-Z0-9._\s-]+)"
 
         sender = re.search(sender_re, text)
         server = re.findall(server_re, text)
@@ -53,6 +57,7 @@ class Spam_VNF:
         # Fetching subject
         if subject:
             subject_line = subject.group(3)
+            print(subject_line)
             if subject_line in self.subjects:
                 return False
 
@@ -63,6 +68,7 @@ def main():
     """
     Runs the main VNF
     """
+    start_time = time.time()
     args = parse_args()
     filter_file = args.dict_file
     vnf = Spam_VNF(filter_file)
@@ -73,6 +79,8 @@ def main():
         nfqueue.run()
     except KeyboardInterrupt:
         print('VNF Quitted')
+        duration = time.time() - start_time
+        print(f'Packets processed in {duration} seconds= {vnf.packet_processed}')
     nfqueue.unbind()
 
 
