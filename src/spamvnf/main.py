@@ -7,7 +7,7 @@ import re
 
 class Spam_VNF:
     def __init__(self, filter_file):
-        self.emails, self.websites, self.subjects = \
+        self.emails, self.servers, self.subjects = \
             reader.read_dict_file(filter_file)
 
     def handle_packet(self, pkt: netfilterqueue.Packet):
@@ -31,44 +31,29 @@ class Spam_VNF:
         Returns False if checks failed (email is spam)
         """
 
-        email_re = r"(.*)(From:\s)([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
-        m = re.search(email_re, text)
-        if m:
-            email = m.group(3)
-            print(email)
-            if email in self.emails:
-                return False
-        # Filtering the sender address
-        sender_address_op1 = list(filter(lambda i: "From:" in i, text))
-        if (len(sender_address_op1) >= 1):
-            sender_address_op2 = sender_address_op1[0].strip()
-            sender_address_op3 = sender_address_op2.split("From: ")[1]
-            sender_email = sender_address_op3.rstrip().replace('\\n\\', '')
-            print("sender_email:", sender_email)
+        sender_re = r"(.*)(From:\s)([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
+        server_re = r"(.*)(Received: from\s)([a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"
+        subject_re = r"(.*)(Subject:\s)(.*)"
+
+        sender = re.search(sender_re, text)
+        server = re.findall(server_re, text)
+        subject = re.search(subject_re, text)
+        # Fetching sender email
+        if sender:
+            sender_email = sender.group(3)
             if sender_email in self.emails:
                 return False
-            # Fetching domain name
-            domain_name = sender_email.split("@")[1]
-            print("domain_name:", domain_name)
-            if domain_name in self.websites:
-                return False
-        # Finding email server
-        email_server_op1 = list(filter(lambda k: "Received: from " in k, text))
-        if(len(email_server_op1) >= 1):
-            email_server_op2 = email_server_op1[0]
-            email_server_op3 = email_server_op2.split("Received: from ")[1]
-            email_server = email_server_op3.split(" ")[0]
-            if email_server != domain_name:
+        # Fetching server address
+        if len(server) > 0:
+            server_name = server[-1]
+            server_address = server_name[2]
+            if server_address in self.servers:
                 return False
 
-        # Filtering subject line
-        subject_op1 = list(filter(lambda j: "Subject:" in j, text))
-        if(len(subject_op1) >= 1):
-            subject_op2 = subject_op1[0].strip()
-            subject_op3 = subject_op2.split("Subject: ")[1]
-            subject_email = subject_op3.rstrip().replace('\\n\\', '')
-            print("subject:", subject_email)
-            if subject_email in self.subjects:
+        # Fetching subject
+        if subject:
+            subject_line = subject.group(3)
+            if subject_line in self.subjects:
                 return False
 
         return True
@@ -83,6 +68,7 @@ def main():
     vnf = Spam_VNF(filter_file)
     nfqueue = netfilterqueue.NetfilterQueue()
     nfqueue.bind(1, vnf.handle_packet)
+    print('Spam VNF running')
     try:
         nfqueue.run()
     except KeyboardInterrupt:
