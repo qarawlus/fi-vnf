@@ -66,8 +66,7 @@ Haydar Qarawlus</div></div></body></html>"""
 
 s = socket.socket()
 s.connect(('10.0.0.2', 25))
-while True:
-	s.send(bytes(msg, 'UTF-8'))
-	# data = s.recv(1024)
-	# print(data)
-# s.close()
+s.send(bytes(msg, 'UTF-8'))
+data = s.recv(1024)
+# print(data)
+s.close()

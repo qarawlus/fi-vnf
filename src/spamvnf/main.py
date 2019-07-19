@@ -57,7 +57,6 @@ class Spam_VNF:
         # Fetching subject
         if subject:
             subject_line = subject.group(3)
-            print(subject_line)
             if subject_line in self.subjects:
                 return False
 
